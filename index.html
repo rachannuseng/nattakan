@@ -1,23 +1,1942 @@
 <!DOCTYPE html>
-<html lang="th">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>โหลดข้อมูลจาก Google Script</title>
+<base target="_top">
+<title>Production Dashboard</title>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<style type="text/css">
+  * {
+    cursor: url(https://ani.cursors-4u.net/cursors/cur-13/cur1162.ani), url(https://ani.cursors-4u.net/cursors/cur-13/cur1162.png), auto !important;
+  }
+</style>
+<a href="https://www.cursors-4u.com/" target="_blank" title="Hell Yeah Pointer 5">
+  <img src="https://cur.cursors-4u.net/cursor.png" border="0" alt="Hell Yeah Pointer 5" style="position:absolute; top: 0px; right: 0px;" />
+</a>
+<style>
+  /* Global Styles & Reset */
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Kanit', 'Segoe UI', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    background-color: #f0f2f5; /* Light gray background, soft and modern */
+    color: #334155; /* Darker text for good contrast */
+    line-height: 1.6;
+    /* Ensure body is the main scroll container */
+    overflow-x: hidden; /* Prevent horizontal scroll on body unless explicitly needed */
+    overflow-y: auto; /* Explicitly make body scrollable */
+  }
+
+  /* Main Container */
+  .container {
+    width: 100%;
+    min-height: 100vh; /* This means it will always be at least the viewport height */
+    margin: 0 auto;
+    background-color: #ffffff; /* Pure white for main content area */
+    padding: 30px;
+    box-sizing: border-box;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); /* Soft shadow */
+    position: relative;
+    overflow: visible; /* ตรวจสอบให้แน่ใจว่าไม่มีการซ่อน overflow ที่นี่ */
+  }
+
+  /* Headings */
+  h1, h2, h3 {
+    color: #1e293b; /* Very dark blue-gray for strong headings */
+    border-bottom: 2px solid #e2e8f0; /* Light, subtle border */
+    padding-bottom: 12px;
+    margin-bottom: 25px;
+    font-weight: 700;
+    text-shadow: none; /* Remove text shadow for cleaner look */
+  }
+  h1 { font-size: 2.8em; color: #2563eb; } /* Vibrant blue for main title */
+  h2 { font-size: 2.2em; }
+  h3 { font-size: 1.6em; }
+
+  /* Header with Background Image */
+  .header-with-bg {
+    background-image: url('https://www.shutterstock.com/image-photo/sheet-metal-stamping-tool-die-600nw-623895971.jpg'); /* AI generated image */
+    background-size: cover;
+    background-position: center;
+    padding: 40px 20px; /* More padding for visual impact */
+    border-radius: 12px; /* Match container border-radius */
+    margin-bottom: 30px; /* Space below the header */
+    display: flex; /* To center content vertically */
+    flex-direction: column; /* Allow stacking of elements */
+    align-items: center;
+    justify-content: center;
+    min-height: 150px; /* Ensure enough height for the image */
+    position: relative; /* For overlay */
+    overflow: hidden; /* To keep border-radius on image and contain marquee */
+  }
+
+  .header-with-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4); /* Dark overlay for text readability */
+    z-index: 1;
+  }
+
+  .header-with-bg h1 {
+    position: relative;
+    z-index: 2; /* Bring text above overlay */
+    color: white; /* White text for contrast */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Stronger shadow for readability */
+    border-bottom: none; /* Remove border from h1 inside this header */
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+
+  /* Running Text (Marquee) */
+  .running-text-wrapper {
+    position: absolute;
+    bottom: 10px; /* Adjusted to be at the bottom of the image */
+    left: 0;
+    width: 100%;
+    overflow: hidden; /* Hide overflowing text */
+    white-space: nowrap; /* Prevent text from wrapping */
+    z-index: 3; /* Ensure it's above everything else in the header */
+    font-size: 1.2em;
+    font-weight: 700;
+    color: #f0f2f5; /* Light color for contrast */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8); /* Shadow for readability */
+    padding: 5px 0;
+  }
+
+  .running-text {
+    display: inline-block;
+    /* Start the text off-screen to the right, so it enters from the right */
+    transform: translateX(100%);
+    animation: bounce-marquee 15s linear infinite alternate; /* Use alternate for back and forth */
+  }
+
+  @keyframes bounce-marquee {
+    0% { transform: translateX(100%); } /* Start with text fully off-screen right */
+    100% { transform: translateX(-100%); } /* Move text fully off-screen left */
+  }
+
+  /* Form Groups */
+  .form-group {
+    margin-bottom: 15px;
+  }
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #475569; /* Medium gray for labels */
+    font-size: 1em;
+  }
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1; /* Light gray border */
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 0.95em;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    background-color: #f8fafc; /* Very light background for inputs */
+    color: #334155; /* Dark text in inputs */
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05); /* Subtle inner shadow */
+  }
+  input[type="text"]:focus,
+  input[type="number"]:focus,
+  input[type="date"]:focus,
+  textarea:focus {
+    border-color: #2563eb; /* Vibrant blue focus */
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2); /* Soft focus ring */
+    outline: none;
+    background-color: #ffffff; /* White on focus */
+  }
+
+  /* Buttons */
+  button {
+    background-color: #2563eb; /* Vibrant blue */
+    color: white;
+    padding: 14px 30px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: 600;
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3); /* Soft shadow for buttons */
+  }
+  button:hover {
+    background-color: #1d4ed8; /* Darker blue on hover */
+    transform: translateY(-2px); /* Subtle lift */
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+  }
+  button:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 8px rgba(37, 99, 235, 0.2);
+  }
+  .button-secondary {
+    background-color: #64748b; /* Muted gray for secondary */
+    box-shadow: 0 5px 15px rgba(100, 116, 139, 0.3);
+  }
+  .button-secondary:hover {
+    background-color: #475569;
+    box-shadow: 0 8px 20px rgba(100, 116, 139, 0.4);
+  }
+  .button-group {
+    display: flex;
+    gap: 15px;
+  }
+
+  /* Messages */
+  .message {
+    margin-top: 25px;
+    padding: 15px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1em;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  }
+  .message.success {
+    background-color: #ecfdf5; /* Very light green background */
+    color: #059669; /* Dark green text */
+    border: 1px solid #34d399;
+  }
+  .message.error {
+    background-color: #fef2f2; /* Very light red background */
+    color: #dc2626; /* Dark red text */
+    border: 1px solid #ef4444;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #e2e8f0; /* Light tab separator */
+  }
+  .tab-button {
+    padding: 15px 30px;
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    font-size: 1.15em;
+    color: #64748b; /* Muted gray for inactive tab text */
+    font-weight: 600;
+    transition: color 0.2s ease, border-bottom 0.2s ease;
+    position: relative;
+    top: 2px;
+  }
+  .tab-button.active {
+    color: #2563eb; /* Vibrant blue for active tab */
+    border-bottom: 3px solid #2563eb; /* Thicker active border */
+    font-weight: 700;
+  }
+  .tab-button:hover:not(.active) {
+    color: #334155; /* Darker on hover */
+  }
+  .tab-content {
+    display: none;
+    padding-top: 10px;
+  }
+  .tab-content.active {
+    display: block;
+  }
+
+  /* Grid Layouts */
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+  }
+
+  /* Chart Containers */
+  .chart-container {
+    width: 100%;
+    /* height: 450px; Removed fixed height */
+    /* margin-bottom: 25px; Removed margin-bottom here, handled by grid gap */
+    border: 1px solid #e2e8f0; /* Light border */
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: #ffffff; /* White background for charts */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); /* Soft shadow */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8; /* Muted gray for placeholder text */
+    font-style: italic;
+    font-size: 1.1em;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 25px;
+    font-size: 0.9em;
+    background-color: #ffffff; /* White background for tables */
+    border-radius: 10px;
+    overflow: hidden; /* This is important for border-radius to work with content */
+  }
+  th, td {
+    border: 1px solid #e2e8f0; /* Light border */
+    padding: 12px 15px; /* Increased padding for better spacing */
+    text-align: center;
+    white-space: nowrap; /* Prevent text from wrapping */
+    color: #334155; /* Dark text for table content */
+  }
+  th {
+    background-color: #f8fafc; /* Very light header background */
+    font-weight: 700;
+    color: #1e293b; /* Dark text for headers */
+    position: sticky; /* Re-added sticky to th */
+    top: 0; /* Stick to the top of its scrollable parent */
+    z-index: 10; /* ให้ส่วนหัวอยู่เหนือเนื้อหาอื่นๆ */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* เงาเมื่อติด */
+  }
+
+  /* Styles for Data Entry Table's scroll container */
+  .table-input-container .table-scroll-container {
+    max-height: 650px; /* Keep max-height for data entry table */
+    overflow-x: auto; /* Allow horizontal scrolling */
+    overflow-y: auto; /* Allow vertical scrolling for data entry table */
+    border: 1px solid #e2e8f0; /* Light border */
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  }
+
+  .overtime-cell {
+    background-color: #fee2e2; /* Light red background for overtime */
+    color: #dc2626; /* Dark red text */
+    font-weight: bold;
+  }
+  /* Style for negative balance cells in dashboard table */
+  .negative-balance-cell {
+    background-color: #dc2626; /* Dark red background */
+    color: white; /* White text */
+    font-weight: bold;
+  }
+  /* Style for negative balance cells in data entry table (live) */
+  .negative-balance-cell-live {
+    background-color: #ef4444 !important; /* Red background, !important to override contenteditable default */
+    color: white !important; /* White text, !important to override contenteditable default */
+    font-weight: bold;
+  }
+
+  /* Filter Controls */
+  .filter-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: #ffffff; /* White background */
+    border: 1px solid #e2e8f0; /* Light border */
+    border-radius: 10px;
+    align-items: flex-end;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  }
+  .filter-controls .form-group {
+    margin-bottom: 0;
+    flex: 1;
+    min-width: 180px;
+  }
+  .filter-controls button {
+    padding: 12px 25px;
+    font-size: 1em;
+  }
+  /* Filter Toggle Group */
+  .filter-toggle-group {
+    display: flex;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 15px;
+    box-shadow: inset 0 0 0 1px #cbd5e1; /* Light border for the group */
+    width: 100%;
+  }
+  .filter-toggle-group button {
+    flex: 1;
+    padding: 10px 20px;
+    background-color: #f8fafc; /* Very light gray for inactive */
+    color: #64748b;
+    border: none;
+    font-weight: 600;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .filter-toggle-group button.active {
+    background-color: #2563eb; /* Vibrant blue for active */
+    color: white;
+  }
+  .filter-toggle-group button:hover:not(.active) {
+    background-color: #e2e8f0; /* Slightly darker on hover */
+  }
+  .filter-toggle-content {
+    display: none;
+    flex-wrap: wrap;
+    gap: 20px;
+    width: 100%;
+  }
+  .filter-toggle-content.active {
+    display: flex;
+  }
+  /* New styles for editable table */
+  .table-input-container {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #ffffff; /* White background */
+    border: 1px solid #e2e8f0; /* Light border */
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  }
+  #dataEntryTable {
+    margin-top: 0;
+    border-radius: 0;
+    box-shadow: none;
+    table-layout: fixed; /* ADDED: Ensures fixed column widths */
+    width: 100%; /* ADDED: Ensures table takes full width of container */
+  }
+  #dataEntryTable th,
+  #dataEntryTable td {
+    padding: 8px 10px;
+    white-space: normal;
+    text-align: center;
+    overflow: hidden; /* ADDED: Hide overflowing content */
+    text-overflow: ellipsis; /* ADDED: Add ellipsis for overflowing text */
+  }
+  /* NEW: Specific widths for data entry table columns */
+  #dataEntryTable th:nth-child(1), #dataEntryTable td:nth-child(1) { width: 100px; } /* Date */
+  #dataEntryTable th:nth-child(2), #dataEntryTable td:nth-child(2) { width: 120px; } /* Part No. */
+  #dataEntryTable th:nth-child(3), #dataEntryTable td:nth-child(3) { width: 70px; } /* M/C */
+  #dataEntryTable th:nth-child(4), #dataEntryTable td:nth-child(4) { width: 90px; } /* Spec */
+  #dataEntryTable th:nth-child(5), #dataEntryTable td:nth-child(5) { width: 90px; } /* Process */
+  #dataEntryTable th:nth-child(6), #dataEntryTable td:nth-child(6) { width: 50px; } /* OP */
+  #dataEntryTable th:nth-child(7), #dataEntryTable td:nth-child(7) { width: 60px; } /* Man */
+  #dataEntryTable th:nth-child(8), #dataEntryTable td:nth-child(8) { width: 60px; } /* Cap/Hr. */
+  #dataEntryTable th:nth-child(9), #dataEntryTable td:nth-child(9) { width: 80px; } /* PMC Plan (Hrs) */
+  #dataEntryTable th:nth-child(10), #dataEntryTable td:nth-child(10) { width: 80px; } /* Actual Prod. (Hrs) */
+  #dataEntryTable th:nth-child(11), #dataEntryTable td:nth-child(11) { width: 70px; } /* Plan Qty */
+  #dataEntryTable th:nth-child(12), #dataEntryTable td:nth-child(12) { width: 70px; } /* Actual Qty */
+  #dataEntryTable th:nth-child(13), #dataEntryTable td:nth-child(13) { width: 70px; } /* Balance */
+  #dataEntryTable th:nth-child(14), #dataEntryTable td:nth-child(14) { width: 120px; } /* Remark */
+  #dataEntryTable th:nth-child(15), #dataEntryTable td:nth-child(15) { width: 60px; } /* Delete Button */
+
+  #dataEntryTable td[contenteditable="true"] {
+    background-color: #f8fafc; /* Very light background for editable cells */
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 6px 8px;
+    min-height: 30px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+  #dataEntryTable td[contenteditable="true"]:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    outline: none;
+    background-color: #ffffff;
+  }
+  #dataEntryTable td.delete-cell {
+    text-align: center;
+    min-width: 50px;
+    border: none;
+    background-color: transparent;
+  }
+  .delete-row-btn {
+    background-color: #ef4444; /* Vibrant red for delete button */
+    padding: 6px 10px;
+    font-size: 0.8em;
+    border-radius: 5px;
+    box-shadow: none;
+  }
+  .delete-row-btn:hover {
+    background-color: #dc2626;
+    transform: none;
+    box-shadow: none;
+  }
+  .table-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 20px;
+  }
+  .table-actions button {
+    padding: 10px 20px;
+    font-size: 1em;
+  }
+  /* Media Queries for Responsiveness */
+  @media (max-width: 768px) {
+    .container {
+      padding: 20px;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    h1 { font-size: 2.2em; }
+    h2 { font-size: 1.8em; }
+    h3 { font-size: 1.4em; }
+    .tabs {
+      flex-wrap: wrap;
+    }
+    .tab-button {
+      flex: 1 1 auto;
+      text-align: center;
+      padding: 12px 15px;
+      font-size: 1em;
+    }
+    .grid-container {
+      grid-template-columns: 1fr; /* Stack charts vertically on small screens */
+    }
+    .filter-controls {
+      flex-direction: column;
+      align-items: stretch;
+      padding: 15px;
+    }
+    .filter-controls .form-group {
+      min-width: unset;
+      width: 100%;
+    }
+    .filter-controls button {
+      width: 100%;
+      padding: 12px 20px;
+    }
+    th, td {
+      padding: 10px 8px;
+      font-size: 0.85em;
+    }
+    .filter-toggle-group {
+      width: 100%;
+    }
+    .filter-toggle-group button {
+      padding: 10px 15px;
+      font-size: 1em;
+    }
+    .chart-container {
+      height: 350px; /* Keep a default height for other charts */
+    }
+    /* Responsive for data entry table */
+    #dataEntryTable th,
+    #dataEntryTable td {
+      min-width: 80px; /* Keep a min-width for small screens */
+      padding: 6px 8px;
+    }
+    /* Remove specific widths for mobile to allow browser to adjust */
+    #dataEntryTable th:nth-child(1), #dataEntryTable td:nth-child(1) { width: auto; }
+    #dataEntryTable th:nth-child(2), #dataEntryTable td:nth-child(2) { width: auto; }
+    #dataEntryTable th:nth-child(3), #dataEntryTable td:nth-child(3) { width: auto; }
+    #dataEntryTable th:nth-child(4), #dataEntryTable td:nth-child(4) { width: auto; }
+    #dataEntryTable th:nth-child(5), #dataEntryTable td:nth-child(5) { width: auto; }
+    #dataEntryTable th:nth-child(6), #dataEntryTable td:nth-child(6) { width: auto; }
+    #dataEntryTable th:nth-child(7), #dataEntryTable td:nth-child(7) { width: auto; }
+    #dataEntryTable th:nth-child(8), #dataEntryTable td:nth-child(8) { width: auto; }
+    #dataEntryTable th:nth-child(9), #dataEntryTable td:nth-child(9) { width: auto; }
+    #dataEntryTable th:nth-child(10), #dataEntryTable td:nth-child(10) { width: auto; }
+    #dataEntryTable th:nth-child(11), #dataEntryTable td:nth-child(11) { width: auto; }
+    #dataEntryTable th:nth-child(12), #dataEntryTable td:nth-child(12) { width: auto; }
+    #dataEntryTable th:nth-child(13), #dataEntryTable td:nth-child(13) { width: auto; }
+    #dataEntryTable th:nth-child(14), #dataEntryTable td:nth-child(14) { width: auto; }
+    #dataEntryTable th:nth-child(15), #dataEntryTable td:nth-child(15) { width: auto; }
+  }
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .container {
+      padding: 30px;
+    }
+    .grid-container {
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    }
+    .chart-container {
+      height: 450px; /* Keep a default height for other charts */
+    }
+  }
+
+  /* New Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Dark semi-transparent background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure it's on top of everything */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .modal-content {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    transform: translateY(-20px);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+
+  .modal-overlay.active .modal-content {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .modal-header {
+    font-size: 1.8em;
+    font-weight: 700;
+    color: #2563eb; /* Vibrant blue */
+    margin-bottom: 15px;
+  }
+
+  .modal-body {
+    font-size: 1.1em;
+    color: #334155;
+    margin-bottom: 25px;
+  }
+
+  /* New style for the large modal message */
+  .modal-message-large {
+    font-size: 48px; /* Increased font size */
+    font-weight: bold; /* Make it bold */
+    color: #059669; /* Green color for success */
+    margin-bottom: 25px;
+  }
+
+  /* NEW: Style for large error message in modal */
+  .modal-message-error {
+    font-size: 24px; /* Slightly smaller than success, but still prominent */
+    font-weight: bold;
+    color: #dc2626; /* Red color for error */
+    margin-bottom: 25px;
+  }
+
+  .modal-footer button {
+    background-color: #2563eb;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 600;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.2);
+  }
+
+  .modal-footer button:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-1px);
+  }
+
+  /* NEW: Styles for dashboard table actions */
+  .delete-btn {
+    background-color: #ef4444; /* Red */
+  }
+  .delete-btn:hover {
+    background-color: #dc2626;
+  }
+  .save-btn {
+    background-color: #10b981; /* Green */
+  }
+  .save-btn:hover {
+    background-color: #059669;
+  }
+  .cancel-btn {
+    background-color: #64748b; /* Gray */
+  }
+  .cancel-btn:hover {
+    background-color: #475569;
+  }
+  .editable-cell-dashboard {
+    background-color: #fffbe6; /* Light yellow for editable cells */
+    border: 1px solid #fcd34d; /* Yellow border */
+    padding: 6px 8px;
+    min-height: 30px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
+  .editable-cell-dashboard:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    outline: none;
+  }
+
+  /* Password Modal Styles */
+  #passwordModal .modal-content {
+    max-width: 350px;
+  }
+  #passwordModal .modal-body {
+    margin-bottom: 15px;
+  }
+  #passwordModal input[type="password"] {
+    width: calc(100% - 24px); /* Adjust for padding */
+    padding: 10px 12px;
+    margin-bottom: 15px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 1em;
+  }
+  #passwordModal .modal-footer {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+  #passwordModal .modal-footer button {
+    padding: 10px 20px;
+    font-size: 0.95em;
+  }
+
+  /* NEW: Styles for conditional cell coloring */
+  .positive-value-cell {
+    background-color: #d1fae5; /* Light green */
+    color: #065f46; /* Dark green text */
+    font-weight: bold;
+  }
+  .zero-value-cell {
+    background-color: #fffbe6; /* Light yellow */
+    color: #b45309; /* Dark yellow/orange text */
+    font-weight: bold;
+  }
+
+  /* NEW: Style for highlighted date column */
+  .highlight-date-cell {
+    background-color: #e0f2fe; /* Light blue for emphasis */
+    color: #1e40af; /* Darker blue text */
+    font-weight: bold;
+  }
+
+  /* Wrapper for Detailed Production Data table with fixed height and scroll */
+  .table-scroll-container-dashboard {
+    height: 450px; /* Fixed height for scrolling */
+    overflow-y: auto; /* Enable vertical scrolling */
+    overflow-x: auto; /* Allow horizontal scrolling for this table */
+    border: 1px solid #e2e8f0; /* Light border */
+    border-radius: 10px; /* Apply border-radius to the container */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    margin-top: 25px; /* Add some space above the table */
+    position: relative; /* Important for sticky children */
+  }
+  /* Reset table styles that were on .table-scroll-container */
+  #detailedProductionTable, #summaryTable { /* Updated ID */
+    margin-top: 0; /* Remove margin as it's now on the wrapper */
+    border-radius: 0; /* Remove border-radius as it's on the wrapper */
+    box-shadow: none; /* Remove box-shadow as it's on the wrapper */
+  }
+
+  /* NEW: Specific widths for detailed production table columns (applied to both header and body) */
+  #detailedProductionTable th:nth-child(1), #detailedProductionTable td:nth-child(1) { width: 100px; } /* Date */
+  #detailedProductionTable th:nth-child(2), #detailedProductionTable td:nth-child(2) { width: 120px; } /* Part No. */
+  #detailedProductionTable th:nth-child(3), #detailedProductionTable td:nth-child(3) { width: 70px; } /* M/C */
+  #detailedProductionTable th:nth-child(4), #detailedProductionTable td:nth-child(4) { width: 90px; } /* Spec */
+  #detailedProductionTable th:nth-child(5), #detailedProductionTable td:nth-child(5) { width: 90px; } /* Process */
+  #detailedProductionTable th:nth-child(6), #detailedProductionTable td:nth-child(6) { width: 50px; } /* OP */
+  #detailedProductionTable th:nth-child(7), #detailedProductionTable td:nth-child(7) { width: 60px; } /* Man */
+  #detailedProductionTable th:nth-child(8), #detailedProductionTable td:nth-child(8) { width: 60px; } /* Cap/Hr. */
+  #detailedProductionTable th:nth-child(9), #detailedProductionTable td:nth-child(9) { width: 80px; } /* PMC Plan (PLAN) */
+  #detailedProductionTable th:nth-child(10), #detailedProductionTable td:nth-child(10) { width: 80px; } /* PMC Plan (HR.) */
+  #detailedProductionTable th:nth-child(11), #detailedProductionTable td:nth-child(11) { width: 70px; } /* Actual Prod. (Actual) */
+  #detailedProductionTable th:nth-child(12), #detailedProductionTable td:nth-child(12) { width: 70px; } /* Actual Prod. (HR.) */
+  #detailedProductionTable th:nth-child(13), #detailedProductionTable td:nth-child(13) { width: 70px; } /* Balance */
+  #detailedProductionTable th:nth-child(14), #detailedProductionTable td:nth-child(14) { width: 80px; } /* Actual Prod. (%) */
+  #detailedProductionTable th:nth-child(15), #detailedProductionTable td:nth-child(15) { width: 80px; } /* Plan (%) */
+  #detailedProductionTable th:nth-child(16), #detailedProductionTable td:nth-child(16) { width: 80px; } /* Cap (%) */
+  #detailedProductionTable th:nth-child(17), #detailedProductionTable td:nth-child(17) { width: 80px; } /* Hr.Overtime */
+  #detailedProductionTable th:nth-child(18), #detailedProductionTable td:nth-child(18) { width: 120px; } /* Remark */
+
+
+  /* NEW: Styles for Summary table specific columns (adjusted for new order) */
+  #summaryTable td:nth-child(2) { /* Total Plan Qty (now 2nd column) */
+    background-color: #d1fae5; /* Light green */
+    color: #065f46; /* Dark green text */
+    font-weight: bold;
+  }
+  #summaryTable td:nth-child(3) { /* Total Actual Qty (now 3rd column) */
+    background-color: #fffbe6; /* Light yellow */
+    color: #b45309; /* Dark yellow/orange text */
+    font-weight: bold;
+  }
+
+  /* Floating Edit Sheet Button */
+  .floating-edit-button {
+    position: fixed;
+    bottom: 20px;
+    left: 20px; /* Changed from right to left */
+    background-color: #2563eb; /* Vibrant blue */
+    color: white;
+    padding: 15px 25px;
+    border: none;
+    border-radius: 50px; /* Make it round */
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: 600;
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4); /* Stronger shadow */
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    z-index: 100; /* Ensure it's above most content */
+    text-decoration: none; /* Remove underline for link */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .floating-edit-button:hover {
+    background-color: #1d4ed8; /* Darker blue on hover */
+    transform: translateY(-3px); /* More pronounced lift */
+    box-shadow: 0 12px 30px rgba(37, 99, 235, 0.5);
+  }
+
+  .floating-edit-button:active {
+    transform: translateY(0);
+    box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+  }
+
+  /* Media query for smaller screens to adjust button size/position */
+  @media (max-width: 768px) {
+    .floating-edit-button {
+      bottom: 15px;
+      left: 15px; /* Changed from right to left */
+      padding: 12px 20px;
+      font-size: 1em;
+      border-radius: 40px;
+    }
+  }
+
+</style>
 </head>
 <body>
-  <h1>ข้อมูลจาก Google Script</h1>
-  <div id="output">กำลังโหลด...</div>
+<div class="container">
+  <div class="header-with-bg">
+    <h1>Production Management System</h1>
+    <div class="running-text-wrapper">
+      <span class="running-text">該網站旨在臨時測試和存儲數據，以便隨時隨地查看。本網站租借7天，可低價購買開發。微信：deadclockth</span>
+    </div>
+  </div>
 
-  <script>
-    fetch("https://script.google.com/macros/s/AKfycbzGeC_-y50WW2lfTZyhdRYlSa2A82e_YKRlWu0sGdxwlDayFXpncUsFCQM8c1I2WWzmhA/exec")
-      .then(response => response.json())
-      .then(data => {
-        document.getElementById("output").innerText = `ข้อความ: ${data.message}\nเวลา: ${data.time}`;
-      })
-      .catch(error => {
-        document.getElementById("output").innerText = "เกิดข้อผิดพลาดในการโหลดข้อมูล";
-        console.error(error);
+  <div class="tabs">
+    <button class="tab-button" onclick="openTab(event, 'dataEntry')">Data Entry</button>
+    <button class="tab-button active" onclick="openTab(event, 'dashboard')">Dashboard</button>
+  </div>
+
+  <div id="dataEntry" class="tab-content">
+    <h2>Production Data Entry</h2>
+    <div class="table-input-container">
+      <div class="table-scroll-container"> <!-- This container is for Data Entry table only -->
+        <table id="dataEntryTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Part No.</th>
+              <th>M/C</th>
+              <th>Spec</th>
+              <th>Process</th>
+              <th>OP</th>
+              <th>Man</th>
+              <th>Cap/Hr.</th>
+              <th>PMC Plan (Hrs)</th>
+              <th>Actual Prod. (Hrs)</th>
+              <th>Plan Qty</th>
+              <th>Actual Qty</th>
+              <th>Balance</th>
+              <th>Remark</th>
+              <th></th> <!-- For delete button -->
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Rows will be added here by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+      <div class="table-actions">
+        <button type="button" onclick="addRow()">Add Row</button>
+        <button type="button" onclick="submitForm()">Submit Data</button>
+      </div>
+    </div>
+    <!-- Removed the old message div -->
+    <!-- <div id="message" class="message" style="display:none;"></div> -->
+  </div>
+
+  <div id="dashboard" class="tab-content active">
+    <h2>Production Overview Dashboard</h2>
+
+    <div class="filter-controls">
+      <div class="filter-toggle-group">
+        <button class="filter-toggle-button active" data-filter-type="date" onclick="toggleFilter(event, 'dateFilter')">Date</button>
+        <button class="filter-toggle-button button-secondary" data-filter-type="week" onclick="toggleFilter(event, 'weekFilter')">Week</button>
+      </div>
+
+      <div id="dateFilter" class="filter-toggle-content active">
+        <div class="form-group">
+          <label for="filterStartDate">Start Date:</label>
+          <input type="date" id="filterStartDate">
+        </div>
+        <div class="form-group">
+          <label for="filterEndDate">End Date:</label>
+          <input type="date" id="filterEndDate">
+        </div>
+      </div>
+
+      <div id="weekFilter" class="filter-toggle-content">
+        <div class="form-group">
+          <label for="filterWeekNumber">Week No.:</label>
+          <input type="number" id="filterWeekNumber" min="1" max="53">
+        </div>
+        <div class="form-group">
+          <label for="filterYear">Year:</label>
+          <input type="number" id="filterYear" min="2000" max="2100">
+        </div>
+      </div>
+
+      <button onclick="loadDashboardData()">Show Data</button>
+    </div>
+
+    <!-- NEW POSITION FOR CHARTS -->
+    <h3>Production Charts</h3>
+    <!-- Chart Filter Controls -->
+    <div class="filter-toggle-group" style="margin-bottom: 20px;">
+      <button class="filter-toggle-button button-secondary" data-chart-filter-type="month" onclick="selectChartAggregation(event, 'month')">Month</button>
+      <button class="filter-toggle-button button-secondary" data-chart-filter-type="week" onclick="selectChartAggregation(event, 'week')">Week</button>
+      <button class="filter-toggle-button active" data-chart-filter-type="day" onclick="selectChartAggregation(event, 'day')">Day</button>
+      <button class="filter-toggle-button button-secondary" data-chart-filter-type="year" onclick="selectChartAggregation(event, 'year')">Year</button>
+    </div>
+    
+    <!-- Overall Summary Chart (now larger and separate) -->
+    <div class="chart-container" id="overallSummaryChart" style="margin-bottom: 25px;">
+      <!-- Overall summary chart will be drawn here -->
+    </div>
+
+    <div class="grid-container"> <!-- NEW: Grid container for Balance and Donut charts -->
+      <!-- Balance Chart -->
+      <div class="chart-container" id="balanceChart">
+        <!-- Balance chart will be drawn here -->
+      </div>
+      <!-- Plan vs Actual Donut Chart -->
+      <div class="chart-container" id="planActualDonutChart">
+        <!-- Plan vs Actual Donut chart will be drawn here -->
+      </div>
+    </div>
+    <!-- END NEW POSITION FOR CHARTS -->
+
+    <!-- NEW POSITION FOR SUMMARY TABLE -->
+    <h3>Summary Data</h3>
+    <table id="summaryTable"> <!-- Changed ID from weeklySummaryTable to summaryTable -->
+      <thead>
+        <tr>
+          <th>Period</th> <!-- This will be dynamically updated -->
+          <th>Total Plan Qty</th>
+          <th>Total Actual Qty</th>
+          <th>Total Balance</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Summary data will be inserted here by JavaScript -->
+      </tbody>
+    </table>
+    <!-- END NEW POSITION FOR SUMMARY TABLE -->
+
+    <h3>Detailed Production Data</h3>
+    <div class="table-scroll-container-dashboard"> <!-- Wrapper for Detailed Production Data table with fixed height and scroll -->
+      <table id="detailedProductionTable"> <!-- Single table for header and body -->
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Part No.</th>
+            <th>M/C</th>
+            <th>Spec</th>
+            <th>Process</th>
+            <th>OP</th>
+            <th>Man</th>
+            <th>Cap/Hr.</th>
+            <th>PMC Plan (PLAN)</th>
+            <th>PMC Plan (HR.)</th>
+            <th>Actual Prod. (Actual)</th>
+            <th>Actual Prod. (HR.)</th>
+            <th>Balance</th>
+            <th>Actual Prod. (%)</th>
+            <th>Plan (%)</th>
+            <th>Cap (%)</th>
+            <th>Hr.Overtime</th>
+            <th>Remark</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Detailed data will be inserted here by JavaScript -->
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- New Modal HTML Structure -->
+<div id="successModal" class="modal-overlay">
+<div class="modal-content">
+  <div class="modal-header">
+    Success!
+  </div>
+  <div class="modal-body modal-message-large" id="successModalMessage">
+    บันทึกข้อมูลสำเร็จ!
+  </div>
+  <div class="modal-footer">
+    <button onclick="hideModal('successModal')">OK</button>
+  </div>
+</div>
+</div>
+
+<!-- NEW: Error Modal HTML Structure -->
+<div id="errorModal" class="modal-overlay">
+<div class="modal-content">
+  <div class="modal-header">
+    Error!
+  </div>
+  <div class="modal-body modal-message-error" id="errorModalMessage">
+    เกิดข้อผิดพลาด.
+  </div>
+  <div class="modal-footer">
+    <button onclick="hideModal('errorModal')">OK</button>
+  </div>
+</div>
+</div>
+
+<!-- NEW: Password Modal HTML Structure -->
+<div id="passwordModal" class="modal-overlay">
+<div class="modal-content">
+  <div class="modal-header">
+    Enter Password
+  </div>
+  <div class="modal-body">
+    <p>Please enter the admin password to proceed:</p>
+    <input type="password" id="adminPasswordInput" placeholder="Password">
+    <div id="passwordError" class="message error" style="display:none; margin-top: 10px;"></div>
+  </div>
+  <div class="modal-footer">
+    <button onclick="verifyPasswordAndProceed()">Submit</button>
+    <button class="button-secondary" onclick="hideModal('passwordModal')">Cancel</button>
+  </div>
+</div>
+</div>
+
+<!-- Floating Edit Sheet Button -->
+<button class="floating-edit-button" onclick="promptForEditSheet()">
+  Edit Sheet
+</button>
+
+<!-- NEW: Datalist for Machine Name Suggestions -->
+<datalist id="machineNamesList"></datalist>
+
+<script>
+google.charts.load('current', {'packages':['corechart', 'bar', 'line']}); // Added 'line' package back
+google.charts.setOnLoadCallback(function() {
+  // Load dashboard data only when tab is active and charts are loaded
+  if (document.getElementById('dashboard').classList.contains('active')) {
+    loadDashboardData();
+  }
+});
+
+let currentFilterType = 'date'; // Default filter type
+let dashboardDataCache = null; // Global variable to store fetched dashboard data
+let currentChartAggregationType = 'day'; // Default chart aggregation type changed to 'day'
+let uniqueMachineNames = []; // Global array to store unique machine names
+
+function openTab(evt, tabName) {
+  console.log("openTab called for:", tabName); // Debug log
+  var i, tabcontent, tablinks;
+  tabcontent = document.getElementsByClassName("tab-content");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tab-button");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  document.getElementById(tabName).style.display = "block";
+  if (evt) { // Check if event is not null (i.e., it's a user click)
+    evt.currentTarget.className += " active";
+  } else { // If evt is null, it's called programmatically (e.g., on DOMContentLoaded)
+    // Find the button corresponding to tabName and add 'active' class
+    const targetButton = document.querySelector(`.tab-button[onclick*="'${tabName}'"]`);
+    if (targetButton) {
+      targetButton.className += " active";
+    }
+  }
+
+
+  if (tabName === 'dashboard') {
+    // Set default filter dates for dateFilter
+    const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    document.getElementById('filterStartDate').value = formatDateForInput(firstDayOfMonth);
+    document.getElementById('filterEndDate').value = formatDateForInput(lastDayOfMonth);
+
+    // Set default filter for weekFilter (current week and year)
+    const currentYear = today.getFullYear();
+    const currentWeek = getWeekNumber(today);
+    document.getElementById('filterWeekNumber').value = currentWeek;
+    document.getElementById('filterYear').value = currentYear;
+
+    // Ensure current filter type is activated
+    const activeToggleButton = document.querySelector(`.filter-toggle-group button[data-filter-type].active`);
+    const activeFilterContentId = activeToggleButton ? activeToggleButton.dataset.filterType + 'Filter' : 'dateFilter';
+    toggleFilter(null, activeFilterContentId); // Simulate click to show correct filter inputs
+
+    // Always load dashboard data when the tab is opened
+    loadDashboardData();
+  } else if (tabName === 'dataEntry') {
+    // Ensure at least 10 rows are present when switching to data entry tab
+    const tableBody = document.querySelector('#dataEntryTable tbody');
+    if (tableBody.rows.length === 0) {
+      for (let i = 0; i < 10; i++) {
+        addRow();
+      }
+    }
+    // NEW: Load unique machine names when entering data entry tab
+    loadUniqueMachineNames();
+  }
+}
+
+function toggleFilter(evt, filterId) {
+  console.log("toggleFilter called for:", filterId); // Debug log
+  const toggleButtons = document.querySelectorAll('.filter-toggle-group button[data-filter-type]');
+  toggleButtons.forEach(button => button.classList.remove('active', 'button-secondary'));
+  if (evt) {
+    evt.currentTarget.classList.add('active');
+    // If not active, add secondary style
+    toggleButtons.forEach(button => {
+      if (!button.classList.contains('active')) {
+        button.classList.add('button-secondary');
+      }
+    });
+  } else { // Case where called by openTab, activate default
+    const defaultButton = document.querySelector(`.filter-toggle-button[data-filter-type="${filterId.replace('Filter', '')}"]`);
+    if (defaultButton) defaultButton.classList.add('active');
+    toggleButtons.forEach(button => {
+      if (!button.classList.contains('active')) {
+        button.classList.add('button-secondary');
+      }
+    });
+  }
+  
+  const filterContents = document.querySelectorAll('.filter-toggle-content');
+  filterContents.forEach(content => content.classList.remove('active'));
+  
+  const activeFilterContent = document.getElementById(filterId);
+  if (activeFilterContent) {
+    activeFilterContent.classList.add('active');
+    currentFilterType = activeFilterContent.id.replace('Filter', ''); // Update current filter type
+  }
+}
+
+// Helper function to format date for input[type="date"] (requires yyyy-MM-dd)
+function formatDateForInput(date) {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`; 
+}
+
+// NEW: Helper function to format date for display in contenteditable cells (yyyy/MM/dd)
+function formatDateForDisplay(date) {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${yyyy}/${mm}/${dd}`; 
+}
+
+// Helper to get ISO week number
+function getWeekNumber(d) {
+    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+    var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+    var weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+    return weekNo;
+}
+
+// Define the expected column order for data entry table
+const DATA_ENTRY_COLUMNS = [
+  'date', 'partNo', 'mc', 'spec', 'process', 'op', 'man', 'capHr',
+  'pmcPlanDetermines', 'actualProductionHours', 'planQuantity',
+  'actualQuantity', 'balance', 'remark'
+];
+
+document.addEventListener('DOMContentLoaded', function() {
+  console.log("DOM Content Loaded."); // Debug log
+  const today = new Date();
+  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  document.getElementById('filterStartDate').value = formatDateForInput(firstDayOfMonth);
+  document.getElementById('filterEndDate').value = formatDateForInput(lastDayOfMonth);
+
+  const currentYear = today.getFullYear();
+  const currentWeek = getWeekNumber(today);
+  document.getElementById('filterWeekNumber').value = currentWeek;
+  document.getElementById('filterYear').value = currentYear;
+
+  // Initialize filter toggle buttons for table
+  const defaultToggleButton = document.querySelector('.filter-toggle-group button[data-filter-type="date"]');
+  if (defaultToggleButton) {
+    defaultToggleButton.classList.add('active');
+    const otherButtons = document.querySelectorAll('.filter-toggle-group button[data-filter-type]:not(.active)');
+    otherButtons.forEach(btn => btn.classList.add('button-secondary'));
+  }
+  document.getElementById('dateFilter').classList.add('active');
+
+  // Initialize filter toggle buttons for charts - Set 'day' as active
+  const defaultChartToggleButton = document.querySelector('.filter-toggle-group button[data-chart-filter-type="day"]'); // Changed to 'day'
+  if (defaultChartToggleButton) {
+    defaultChartToggleButton.classList.add('active');
+    const otherChartButtons = document.querySelectorAll('.filter-toggle-group button[data-chart-filter-type]:not(.active)');
+    otherChartButtons.forEach(btn => btn.classList.add('button-secondary'));
+  }
+
+  // Set Dashboard as the default active tab on load
+  openTab(null, 'dashboard'); // Pass null for event as it's not a user click
+});
+
+function addRow() {
+  console.log("addRow() called."); // Debug log
+  const tableBody = document.querySelector('#dataEntryTable tbody');
+  const newRow = tableBody.insertRow();
+
+  DATA_ENTRY_COLUMNS.forEach(colName => {
+    const cell = newRow.insertCell();
+    cell.setAttribute('contenteditable', 'true');
+    cell.setAttribute('data-col', colName); // Store column name for easy access
+
+    // Set default date for the date column and apply highlight style
+    if (colName === 'date') {
+      cell.textContent = formatDateForDisplay(new Date()); // Use new display format (yyyy/MM/dd)
+      cell.classList.add('highlight-date-cell'); // Apply highlight class
+    }
+
+    // Add list attribute for 'mc' column to enable datalist suggestions
+    if (colName === 'mc') {
+      cell.setAttribute('list', 'machineNamesList');
+    }
+
+    // Add event listener for 'balance' column to apply live styling
+    if (colName === 'balance') {
+      cell.addEventListener('input', function() {
+        const value = parseFloat(this.textContent.trim());
+        if (value < 0) {
+          this.classList.add('negative-balance-cell-live');
+        } else {
+          this.classList.remove('negative-balance-cell-live');
+        }
       });
-  </script>
+    }
+  });
+
+  // Add delete button cell
+  const deleteCell = newRow.insertCell();
+  deleteCell.classList.add('delete-cell');
+  const deleteButton = document.createElement('button');
+  deleteButton.textContent = 'Delete';
+  deleteButton.classList.add('delete-row-btn');
+  deleteButton.onclick = function() {
+    newRow.remove();
+    // If all rows are deleted, add one back
+    if (tableBody.rows.length === 0) {
+      addRow(); // Add a single row if all are deleted
+    }
+  };
+  deleteCell.appendChild(deleteButton);
+}
+
+// Generic function to show a modal
+function showModal(modalId, message) {
+  console.log(`showModal called for ${modalId} with message: ${message}`);
+  const modal = document.getElementById(modalId);
+  if (modalId === 'successModal') {
+    document.getElementById('successModalMessage').textContent = message;
+  } else if (modalId === 'errorModal') {
+    document.getElementById('errorModalMessage').textContent = message;
+  }
+  modal.classList.add('active');
+}
+
+// Generic function to hide a modal
+function hideModal(modalId) {
+  console.log(`hideModal called for ${modalId}`);
+  const modal = document.getElementById(modalId);
+  modal.classList.remove('active');
+}
+
+function submitForm() {
+  console.log("submitForm() called.");
+  const tableBody = document.querySelector('#dataEntryTable tbody');
+  const rows = tableBody.querySelectorAll('tr');
+  const dataToSend = [];
+  let hasValidDataToSubmit = false;
+
+  rows.forEach(row => {
+    const cells = row.querySelectorAll('td[contenteditable="true"]');
+    const rowData = {};
+    let isRowCompletelyEmpty = true;
+    let mcValue = '';
+
+    cells.forEach(cell => {
+      const colName = cell.dataset.col;
+      let value = cell.textContent.trim();
+
+      if (value !== '') {
+        isRowCompletelyEmpty = false;
+      }
+
+      if (colName === 'mc') {
+        mcValue = value;
+      }
+
+      if (['man', 'capHr', 'pmcPlanDetermines', 'actualProductionHours', 'planQuantity', 'actualQuantity', 'balance'].includes(colName)) {
+        rowData[colName] = parseFloat(value) || 0;
+      } else {
+        rowData[colName] = value;
+      }
+    });
+
+    // ตรวจสอบว่าแถวไม่ว่างเปล่าทั้งหมด และคอลัมน์ "M/C" ไม่ว่าง
+    if (!isRowCompletelyEmpty && mcValue !== '') {
+      dataToSend.push(rowData);
+      hasValidDataToSubmit = true;
+    }
+  });
+
+  console.log("Data to send (after MC validation):", dataToSend);
+
+  // ถ้าไม่มีข้อมูลที่ถูกต้องให้ส่ง (ไม่มีแถวใดที่กรอก M/C)
+  if (!hasValidDataToSubmit) {
+    console.log("No valid data to submit. Displaying error modal.");
+    showModal('errorModal', 'กรุณากรอกข้อมูลในคอลัมน์ "M/C" อย่างน้อยหนึ่งแถวก่อนบันทึก');
+    return; // หยุดการทำงานของฟังก์ชัน
+  }
+
+  console.log("Attempting to submit data via google.script.run...");
+
+  // แสดง Pop Up สำเร็จและล้างข้อมูลในตารางทันที
+  showModal('successModal', 'บันทึกข้อมูลสำเร็จ!');
+  tableBody.innerHTML = ''; // ล้างข้อมูลในตาราง
+  for (let i = 0; i < 10; i++) { // เพิ่ม 10 แถวเปล่าใหม่
+    addRow();
+  }
+
+  // ส่งข้อมูลไปยัง Google Apps Script โดยไม่ต้องรอผลตอบรับเพื่ออัปเดต UI
+  try {
+    google.script.run
+      .withFailureHandler(function(error) {
+        // ข้อผิดพลาดจะถูกบันทึกใน Console และ Apps Script Executions เท่านั้น
+        console.error("Failure handler called with error (UI already updated):", error);
+        console.error('Submission failed on server-side. Please check Google Apps Script "Executions" for details.');
+      })
+      .doPost(dataToSend);
+  } catch (e) {
+      console.error("Error directly before google.script.run call (UI already updated):", e);
+  }
+}
+
+// NEW: Function to load unique machine names from Google Sheet
+function loadUniqueMachineNames() {
+  console.log("loadUniqueMachineNames called.");
+  google.script.run
+    .withSuccessHandler(function(names) {
+      console.log("Unique machine names fetched:", names);
+      uniqueMachineNames = names; // Store globally
+      populateMachineDatalist(names);
+    })
+    .withFailureHandler(function(error) {
+      console.error("Error fetching unique machine names:", error);
+    })
+    .getUniqueMachineNames();
+}
+
+// NEW: Function to populate the datalist with machine names
+function populateMachineDatalist(names) {
+  const datalist = document.getElementById('machineNamesList');
+  datalist.innerHTML = ''; // Clear existing options
+  names.forEach(name => {
+    const option = document.createElement('option');
+    option.value = name;
+    datalist.appendChild(option);
+  });
+}
+
+function loadDashboardData() {
+  console.log("loadDashboardData called."); // Debug log
+  const filterOptions = {
+    filterType: currentFilterType
+  };
+
+  if (currentFilterType === 'date') {
+    filterOptions.startDate = document.getElementById('filterStartDate').value;
+    filterOptions.endDate = document.getElementById('filterEndDate').value;
+  } else if (currentFilterType === 'week') {
+    filterOptions.weekNumber = document.getElementById('filterWeekNumber').value;
+    filterOptions.year = document.getElementById('filterYear').value;
+  }
+  
+  // Clear current dashboard content before loading new data
+  document.querySelector('#detailedProductionTable tbody').innerHTML = '<tr><td colspan="18">Loading data...</td></tr>'; // Changed ID
+  document.querySelector('#summaryTable tbody').innerHTML = '<tr><td colspan="4">Loading data...</td></tr>'; // Updated ID
+  document.getElementById('overallSummaryChart').innerHTML = 'Loading chart...'; // NEW: Clear new chart
+  document.getElementById('balanceChart').innerHTML = 'Loading chart...'; // Renamed
+  document.getElementById('planActualDonutChart').innerHTML = 'Loading chart...'; // NEW: Clear donut chart
+
+
+  google.script.run
+    .withSuccessHandler(function(response) {
+      console.log("getDashboardData success response:", response); // Debug log
+      if (response.status === 'success') {
+        dashboardDataCache = response; // Store the full response
+        displayDetailedProductionTable(response.detailedData);
+        // Draw charts and summary table based on theChartAggregationType
+        selectChartAggregation(null, currentChartAggregationType); // Pass null for event, use current type
+      } else {
+        console.error('Error loading dashboard data:', response.message);
+        alert('Failed to load dashboard data: ' + response.message); // Still using alert for dashboard load errors
+        document.querySelector('#detailedProductionTable tbody').innerHTML = '<tr><td colspan="18">Failed to load data</td></tr>'; // Changed ID
+        document.querySelector('#summaryTable tbody').innerHTML = '<tr><td colspan="4">Failed to load data</td></tr>'; // Updated ID
+        document.getElementById('overallSummaryChart').innerHTML = 'Failed to load chart'; // NEW
+        document.getElementById('balanceChart').innerHTML = 'Failed to load chart';
+        document.getElementById('planActualDonutChart').innerHTML = 'Failed to load chart'; // NEW
+      }
+    })
+    .withFailureHandler(function(error) {
+      console.error('Error calling getDashboardData:', error); // Debug log
+      console.error('Dashboard data loading failed. Please check Google Apps Script "Executions" for server-side errors.'); // Added for debugging
+      alert('Error fetching dashboard data: ' + error.message + '\n\nโปรดตรวจสอบ Console ของเบราว์เซอร์และ Logs ของ Apps Script เพื่อดูรายละเอียดเพิ่มเติม'); // Still using alert for dashboard load errors
+      document.querySelector('#detailedProductionTable tbody').innerHTML = '<tr><td colspan="18">Error fetching data</td></tr>'; // Changed ID
+      document.querySelector('#summaryTable tbody').innerHTML = '<tr><td colspan="4">Error fetching data</td></tr>'; // Updated ID
+      document.getElementById('overallSummaryChart').innerHTML = 'Error loading chart'; // NEW
+      document.getElementById('balanceChart').innerHTML = 'Error loading chart';
+      document.getElementById('planActualDonutChart').innerHTML = 'Error loading chart'; // NEW
+    })
+    .getDashboardData(filterOptions);
+}
+
+// NEW: Function to handle chart aggregation selection
+function selectChartAggregation(evt, type) {
+  console.log("selectChartAggregation called for type:", type);
+  currentChartAggregationType = type;
+
+  // Update active button styles
+  const toggleButtons = document.querySelectorAll('.filter-toggle-group button[data-chart-filter-type]');
+  toggleButtons.forEach(button => {
+    if (button.dataset.chartFilterType === type) {
+      button.classList.add('active');
+      button.classList.remove('button-secondary');
+    } else {
+      button.classList.remove('active');
+      button.classList.add('button-secondary');
+    }
+  });
+
+  if (dashboardDataCache) {
+    let dataToDrawForCharts = [];
+    let dataToDrawForSummaryTable = []; // New variable for summary table data
+    let xLabel = '';
+    let chartTitleSuffix = '';
+    let filteredDetailedDataForOverallChart = []; // Data for the overall summary chart
+    let latestPeriodPlan = 0; // For donut chart
+    let latestPeriodActual = 0; // For donut chart
+
+    const allDetailedData = dashboardDataCache.detailedData;
+
+    if (allDetailedData.length > 0) {
+      // Sort detailed data by date to easily find the latest period
+      const sortedDetailedData = [...allDetailedData].sort((a, b) => {
+        const dateA = new Date(a.date.replace(/\//g, '-')); // Convert yyyy/MM/dd to yyyy-MM-dd for Date object
+        const dateB = new Date(b.date.replace(/\//g, '-'));
+        return dateA.getTime() - dateB.getTime();
+      });
+      const latestItem = sortedDetailedData[sortedDetailedData.length - 1];
+      const latestDate = new Date(latestItem.date.replace(/\//g, '-'));
+
+      switch (type) {
+        case 'day':
+          dataToDrawForCharts = dashboardDataCache.dailySummary;
+          dataToDrawForSummaryTable = dashboardDataCache.dailySummary; // Use daily summary for table
+          xLabel = 'Date';
+          chartTitleSuffix = 'Daily';
+          // Filter detailed data for the latest day
+          const latestDayStr = formatDateForDisplay(latestDate); // yyyy/MM/dd
+          filteredDetailedDataForOverallChart = allDetailedData.filter(item => item.date === latestDayStr);
+          break;
+        case 'week':
+          dataToDrawForCharts = dashboardDataCache.weeklySummary;
+          dataToDrawForSummaryTable = dashboardDataCache.weeklySummary; // Use weekly summary for table
+          xLabel = 'Week';
+          chartTitleSuffix = 'Weekly';
+          // Filter detailed data for the latest week
+          const latestWeek = getWeekNumber(latestDate);
+          const latestYearForWeek = latestDate.getFullYear();
+          filteredDetailedDataForOverallChart = allDetailedData.filter(item => {
+            const itemDate = new Date(item.date.replace(/\//g, '-'));
+            return getWeekNumber(itemDate) === latestWeek && itemDate.getFullYear() === latestYearForWeek;
+          });
+          break;
+        case 'month':
+          dataToDrawForCharts = dashboardDataCache.monthlySummary;
+          dataToDrawForSummaryTable = dashboardDataCache.monthlySummary; // Use monthly summary for table
+          xLabel = 'Month';
+          chartTitleSuffix = 'Monthly';
+          // Filter detailed data for the latest month
+          const latestMonth = latestDate.getMonth() + 1;
+          const latestYearForMonth = latestDate.getFullYear();
+          filteredDetailedDataForOverallChart = allDetailedData.filter(item => {
+            const itemDate = new Date(item.date.replace(/\//g, '-'));
+            return (itemDate.getMonth() + 1) === latestMonth && itemDate.getFullYear() === latestYearForMonth;
+          });
+          break;
+        case 'year':
+          dataToDrawForCharts = dashboardDataCache.yearlySummary;
+          dataToDrawForSummaryTable = dashboardDataCache.yearlySummary; // Use yearly summary for table
+          xLabel = 'Year';
+          chartTitleSuffix = 'Yearly';
+          // Filter detailed data for the latest year
+          const latestYear = latestDate.getFullYear();
+          filteredDetailedDataForOverallChart = allDetailedData.filter(item => {
+            const itemDate = new Date(item.date.replace(/\//g, '-'));
+            return itemDate.getFullYear() === latestYear;
+          });
+          break;
+        default: // Default to day if type is unknown or not provided
+          dataToDrawForCharts = dashboardDataCache.dailySummary;
+          dataToDrawForSummaryTable = dashboardDataCache.dailySummary; // Default to daily summary for table
+          xLabel = 'Date';
+          chartTitleSuffix = 'Daily';
+          // Default filter for overall chart (latest day)
+          const defaultLatestDayStr = formatDateForDisplay(latestDate);
+          filteredDetailedDataForOverallChart = allDetailedData.filter(item => item.date === defaultLatestDayStr);
+      }
+
+      // For the donut chart, get the plan and actual from the LATEST period in the selected summary type
+      if (dataToDrawForCharts.length > 0) {
+        const latestPeriodSummary = dataToDrawForCharts[0]; // Summaries are sorted descending, so [0] is latest
+        latestPeriodPlan = parseFloat(latestPeriodSummary.plan) || 0;
+        latestPeriodActual = parseFloat(latestPeriodSummary.actual) || 0;
+      }
+
+    } else {
+      // If no detailed data, ensure charts and tables show no data message
+      document.getElementById('balanceChart').innerHTML = 'No data available for charts.';
+      document.getElementById('overallSummaryChart').innerHTML = 'No data available for charts.';
+      document.getElementById('planActualDonutChart').innerHTML = 'No data available for charts.'; // NEW
+      document.querySelector('#summaryTable tbody').innerHTML = '<tr><td colspan="4">No summary data for the selected period.</td></tr>'; // Updated ID
+      return; // Exit early if no data
+    }
+    
+    console.log(`Drawing charts with aggregation type: ${type}, xLabel: ${xLabel}, data length: ${dataToDrawForCharts.length}`);
+    console.log("Data for charts:", dataToDrawForCharts); // Log the actual data being used
+
+    // Draw charts
+    drawOverallSummaryChart(filteredDetailedDataForOverallChart, `Production Summary by Machine: Plan vs Actual (${chartTitleSuffix})`);
+    drawBalanceChart(dataToDrawForCharts, xLabel, `Balance (${chartTitleSuffix})`);
+    // Pass the specific latest period's plan and actual to the donut chart
+    drawPlanActualDonutChart(latestPeriodPlan, latestPeriodActual, `Plan vs Actual (${chartTitleSuffix})`);
+
+    // Display summary table with the correct data and label
+    displaySummaryTable(dataToDrawForSummaryTable, xLabel);
+
+  } else {
+    console.warn("dashboardDataCache is empty. Cannot draw charts or summary table.");
+    document.getElementById('balanceChart').innerHTML = 'No data available for charts.';
+    document.getElementById('overallSummaryChart').innerHTML = 'No data available for charts.';
+    document.getElementById('planActualDonutChart').innerHTML = 'No data available for charts.'; // NEW
+    document.querySelector('#summaryTable tbody').innerHTML = '<tr><td colspan="4">No summary data available.</td></tr>'; // Updated ID
+  }
+}
+
+function displayDetailedProductionTable(detailedData) {
+  console.log("displayDetailedProductionTable called with data:", detailedData); // Debug log
+  const tableBody = document.querySelector('#detailedProductionTable tbody'); // Changed ID back
+  tableBody.innerHTML = '';
+
+  if (detailedData.length === 0) {
+    tableBody.innerHTML = '<tr><td colspan="18">No production data for the selected period.</td></tr>';
+    return;
+  }
+
+  // Sort data by date in descending order (latest first)
+  const sortedDetailedData = [...detailedData].sort((a, b) => {
+    const dateA = new Date(a.date.replace(/\//g, '-')); // Convert yyyy/MM/dd to yyyy-MM-dd for Date object
+    const dateB = new Date(b.date.replace(/\//g, '-'));
+    return dateB.getTime() - dateA.getTime(); // Descending order
+  });
+
+  sortedDetailedData.forEach((item) => { // Use sorted data
+    const row = tableBody.insertRow();
+    row.setAttribute('data-row-index', item.originalRowIndex);
+    row.setAttribute('data-sheet-name', item.sheetName);
+
+    // Date cell (Index 0) - Highlighted
+    const dateCell = row.insertCell();
+    dateCell.textContent = item.date;
+    dateCell.classList.add('highlight-date-cell'); // Add highlight class
+
+    row.insertCell().textContent = item.partNo; // 1
+    const machineCell = row.insertCell(); // 2
+    console.log("Machine value for row:", item.machine); // Debug log for machine value
+    machineCell.textContent = item.machine; 
+    row.insertCell().textContent = item.spec; // 3
+    row.insertCell().textContent = item.process; // 4
+    row.insertCell().textContent = item.op; // 5
+    row.insertCell().textContent = item.man.toLocaleString(); // 6
+    row.insertCell().textContent = item.capHr.toLocaleString(); // 7
+    row.insertCell().textContent = item.pmcPlanDeterminesPlan.toLocaleString(); // 8 (Plan Quantity)
+    row.insertCell().textContent = item.pmcPlanDeterminesHr.toLocaleString(); // 9 (PMC Plan Determines)
+    row.insertCell().textContent = item.actualProductionActual.toLocaleString(); // 10 (Actual Quantity)
+    row.insertCell().textContent = item.actualProductionHr.toLocaleString(); // 11 (Actual Production Hours)
+
+    // Balance cell (Index 12) - Green for positive, Yellow for zero, Red for negative
+    const balanceCell = row.insertCell();
+    const balanceValue = parseFloat(item.balance);
+    balanceCell.textContent = balanceValue.toLocaleString();
+    if (balanceValue < 0) {
+      balanceCell.classList.add('negative-balance-cell');
+    } else if (balanceValue === 0) {
+      balanceCell.classList.add('zero-value-cell');
+    } else if (balanceValue > 0) {
+      balanceCell.classList.add('positive-value-cell');
+    }
+
+    // Helper function for percentage styling
+    function applyPercentageStyle(cell, valueString) {
+      const value = parseFloat(valueString); // Remove '%' and parse
+      cell.textContent = valueString; // Keep original text content
+      if (value > 0) {
+        cell.classList.add('positive-value-cell');
+      } else if (value === 0) {
+        cell.classList.add('zero-value-cell');
+      }
+      // No specific style for negative percentages requested, so default will apply
+    }
+
+    const actualProdPercentCell = row.insertCell(); // 13
+    applyPercentageStyle(actualProdPercentCell, item.actualProductionPercent);
+
+    const planPercentCell = row.insertCell(); // 14
+    applyPercentageStyle(planPercentCell, item.planPercent);
+
+    const capPercentCell = row.insertCell(); // 15
+    applyPercentageStyle(capPercentCell, item.capPercent);
+
+    // Hr.Overtime cell (Index 16) - Yellow for zero, Red for positive
+    const hrOvertimeCell = row.insertCell();
+    const hrOvertimeValue = parseFloat(item.hrOvertime);
+    hrOvertimeCell.textContent = hrOvertimeValue.toLocaleString();
+    if (hrOvertimeValue > 0) {
+      hrOvertimeCell.classList.add('overtime-cell'); // Existing red style
+    } else if (hrOvertimeValue === 0) {
+      hrOvertimeCell.classList.add('zero-value-cell');
+    }
+    // No specific style for negative overtime requested
+
+    row.insertCell().textContent = item.remark; // 17
+  });
+}
+
+// NEW: Function to display the dynamic summary table
+function displaySummaryTable(summaryData, xLabel) {
+  console.log("displaySummaryTable called with data:", summaryData, "xLabel:", xLabel);
+  const tableHead = document.querySelector('#summaryTable thead tr');
+  const tableBody = document.querySelector('#summaryTable tbody');
+  tableBody.innerHTML = '';
+
+  // Update table headers dynamically
+  tableHead.innerHTML = `
+    <th>${xLabel}</th>
+    <th>Total Plan Qty</th>
+    <th>Total Actual Qty</th>
+    <th>Total Balance</th>
+  `;
+
+  if (summaryData.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="4">No ${xLabel.toLowerCase()} summary data for the selected period.</td></tr>`;
+    return;
+  }
+
+  summaryData.forEach(item => {
+    const row = tableBody.insertRow();
+    
+    // Period (dynamic column based on xLabel)
+    const periodCell = row.insertCell();
+    periodCell.textContent = item[xLabel.toLowerCase()]; // Access property dynamically (e.g., item.date, item.week, item.month, item.year)
+    periodCell.classList.add('highlight-date-cell'); // Add highlight class
+
+    // Total Plan Qty
+    const planQtyCell = row.insertCell();
+    planQtyCell.textContent = item.plan.toLocaleString();
+
+    // Total Actual Qty
+    const actualQtyCell = row.insertCell();
+    actualQtyCell.textContent = item.actual.toLocaleString();
+
+    // Total Balance
+    const balanceCell = row.insertCell();
+    balanceCell.textContent = item.balance.toLocaleString();
+    // Apply styling if balance is negative
+    if (parseFloat(item.balance) < 0) {
+      balanceCell.classList.add('negative-balance-cell');
+    } else if (parseFloat(item.balance) === 0) {
+      balanceCell.classList.add('zero-value-cell');
+    } else if (parseFloat(item.balance) > 0) {
+      balanceCell.classList.add('positive-value-cell');
+    }
+  });
+}
+
+// NEW: Function to draw the overall summary horizontal bar chart by Machine
+function drawOverallSummaryChart(detailedData, title) {
+  console.log("drawOverallSummaryChart called with data:", detailedData, "title:", title);
+  const chartDiv = document.getElementById('overallSummaryChart');
+  if (detailedData.length === 0) {
+    chartDiv.innerHTML = 'No overall summary data for the selected period.';
+    chartDiv.style.height = '200px'; // Set a default height for no data
+    return;
+  } else {
+    chartDiv.innerHTML = '';
+  }
+
+  // Aggregate data by machine
+  const machineSummary = {};
+  detailedData.forEach(item => {
+    const machine = item.machine || 'Unknown'; // Handle cases where machine might be empty
+    if (!machineSummary[machine]) {
+      machineSummary[machine] = { plan: 0, actual: 0 };
+    }
+    machineSummary[machine].plan += parseFloat(item.pmcPlanDeterminesPlan) || 0;
+    machineSummary[machine].actual += parseFloat(item.actualProductionActual) || 0;
+  });
+
+  const data = new google.visualization.DataTable();
+  data.addColumn('string', 'Machine');
+  data.addColumn('number', 'Plan Quantity');
+  data.addColumn('number', 'Actual Quantity');
+
+  // Convert aggregated data to array for DataTable, filtering out machines with no plan and no actual
+  Object.keys(machineSummary).sort().forEach(machineName => { // Sort by machine name
+    const summary = machineSummary[machineName];
+    // Only add if there's either a plan or an actual quantity
+    if (summary.plan > 0 || summary.actual > 0) {
+      data.addRow([machineName, summary.plan, summary.actual]);
+    }
+  });
+
+  // If no data after filtering, display a message
+  if (data.getNumberOfRows() === 0) {
+    chartDiv.innerHTML = 'No machine production data with plan or actual quantities for the selected period.';
+    chartDiv.style.height = '200px'; // Set a default height for no data
+    return;
+  }
+
+  // Calculate dynamic height based on number of rows
+  const numberOfRows = data.getNumberOfRows();
+  const baseChartHeight = 150; // Height for title, legend, and general padding
+  const heightPerBar = 40;    // Height for each bar + spacing
+  let dynamicHeight = baseChartHeight + (numberOfRows * heightPerBar);
+
+  // Set minimum and maximum height for aesthetic purposes
+  const minHeight = 250;
+  const maxHeight = 800;
+  dynamicHeight = Math.max(minHeight, Math.min(maxHeight, dynamicHeight));
+
+  // Apply the calculated height to the chart container
+  chartDiv.style.height = `${dynamicHeight}px`;
+
+  const options = {
+    title: title,
+    legend: { position: 'bottom', textStyle: { color: '#334155' } },
+    hAxis: { 
+      title: 'Quantity', 
+      textStyle: { 
+        color: '#475569', 
+        fontSize: 14
+        // Removed slantedText and slantedTextAngle from hAxis
+      }, 
+      titleTextStyle: { color: '#334155', fontSize: 18 }
+    },
+    vAxis: { 
+      title: 'Machine', // V-axis is now the category axis for horizontal bars
+      textStyle: { 
+        color: '#475569', 
+        fontSize: 14,
+        slantedText: true, // Enable slanted text for vAxis (Machine)
+        slantedTextAngle: 90 // Rotate text 90 degrees for vertical display
+      } 
+    },
+    colors: ['#4299e1', '#f6ad55'], // NEW: Updated colors (blue and orange)
+    bar: { groupWidth: '80%' },
+    backgroundColor: { fill: 'transparent' },
+    chartArea: { left: '15%', top: '10%', right: '5%', bottom: '20%', width: '80%', height: '70%' },
+    orientation: 'horizontal' // Make it a horizontal bar chart
+  };
+
+  const chart = new google.visualization.BarChart(chartDiv); // Use BarChart for horizontal
+  chart.draw(data, options);
+}
+
+
+// Renamed and modified chart functions
+function drawBalanceChart(chartData, xLabel, title) {
+  console.log("drawBalanceChart called with data:", chartData, "xLabel:", xLabel, "title:", title);
+  const chartDiv = document.getElementById('balanceChart'); // Renamed ID
+  if (chartData.length === 0) {
+    chartDiv.innerHTML = 'No balance chart data for the selected period.';
+    chartDiv.style.height = '200px'; // Set a default height for no data
+    return;
+  } else {
+    chartDiv.innerHTML = '';
+  }
+  // Set a fixed height for the balance chart container to make it large
+  chartDiv.style.height = '450px'; // กำหนดความสูงให้มีขนาดใหญ่
+  const data = new google.visualization.DataTable();
+  data.addColumn('string', xLabel);
+  data.addColumn('number', 'Balance');
+
+  chartData.forEach(item => {
+    // Dynamically get the x-axis value based on xLabel
+    let xValue;
+    if (xLabel === 'Date') xValue = item.date;
+    else if (xLabel === 'Week') xValue = item.week;
+    else if (xLabel === 'Month') xValue = item.month;
+    else if (xLabel === 'Year') xValue = item.year;
+    
+    data.addRow([xValue, item.balance]); // Use item.balance directly
+  });
+
+  const options = {
+    title: title,
+    legend: { position: 'none' },
+    hAxis: { 
+      title: xLabel, // Dynamic x-axis title
+      textStyle: { color: '#475569', fontSize: 14 }, // Changed font size to 14
+      titleTextStyle: { color: '#334155', fontSize: 18 }
+    },
+    vAxis: { 
+      title: 'Balance', 
+      textStyle: { color: '#475569', fontSize: 14 }, // Changed font size to 14
+      titleTextStyle: { color: '#334155', fontSize: 18 }
+    },
+    colors: ['#ef4444'],
+    bar: { groupWidth: '80%' },
+    backgroundColor: { fill: 'transparent' },
+    chartArea: { left: '10%', top: '10%', right: '5%', bottom: '20%', width: '85%', height: '75%' }
+  };
+
+  const chart = new google.visualization.ColumnChart(chartDiv); // Still ColumnChart
+  chart.draw(data, options);
+}
+
+// NEW: Function to draw the Plan vs Actual Donut Chart
+function drawPlanActualDonutChart(totalPlan, totalActual, title) { // Updated parameters
+  console.log("drawPlanActualDonutChart called with totalPlan:", totalPlan, "totalActual:", totalActual, "title:", title);
+  const chartDiv = document.getElementById('planActualDonutChart');
+  chartDiv.style.height = '450px'; // Set a fixed height for consistency
+
+  if (totalPlan === 0 && totalActual === 0) {
+    chartDiv.innerHTML = 'No Plan or Actual data for the selected period.';
+    return;
+  } else {
+    chartDiv.innerHTML = ''; // Clear previous content
+  }
+
+  const data = new google.visualization.DataTable();
+  data.addColumn('string', 'Category');
+  data.addColumn('number', 'Quantity');
+
+  // Define potential colors for each category (softer tones)
+  const colorMap = {
+    'Actual Quantity': '#68D391',    // Light Green
+    'Remaining Plan': '#FC8181',     // Light Red
+    'Over Production': '#F6AD55',    // Light Orange
+    'Total Plan Quantity': '#63B3ED' // Light Blue
+  };
+
+  const addedSlices = []; // To keep track of slices added and their order
+  const chartColors = []; // To build the dynamic colors array
+
+  if (totalActual <= totalPlan) {
+    // Case 1: Actual is less than or equal to Plan
+    if (totalActual > 0) {
+      data.addRow(['Actual Quantity', totalActual]);
+      addedSlices.push('Actual Quantity');
+    }
+    if (totalPlan - totalActual > 0) { // Only add remaining if positive
+      data.addRow(['Remaining Plan', totalPlan - totalActual]);
+      addedSlices.push('Remaining Plan');
+    }
+  } else { // totalActual > totalPlan
+    // Case 2: Actual is greater than Plan (Over Production)
+    if (totalPlan > 0) { // Show the full plan as a slice
+      data.addRow(['Total Plan Quantity', totalPlan]);
+      addedSlices.push('Total Plan Quantity');
+    }
+    if (totalActual - totalPlan > 0) { // Only add over production if positive
+      data.addRow(['Over Production', totalActual - totalPlan]);
+      addedSlices.push('Over Production');
+    }
+  }
+
+  // Populate chartColors based on the order of added slices
+  addedSlices.forEach(sliceName => {
+    if (colorMap[sliceName]) {
+      chartColors.push(colorMap[sliceName]);
+    }
+  });
+
+  // If no slices were added (e.g., totalPlan and totalActual are both 0, or only one is 0 and the other is also 0 after calculation)
+  if (data.getNumberOfRows() === 0) {
+    chartDiv.innerHTML = 'No relevant data to display in the donut chart for the selected period.';
+    return;
+  }
+
+  const options = {
+    title: title,
+    pieHole: 0.4, // Makes it a donut chart
+    legend: { position: 'bottom', textStyle: { color: '#334155' } },
+    colors: chartColors.length > 0 ? chartColors : ['#cccccc'], // Use dynamic colors, fallback if no slices added
+    backgroundColor: { fill: 'transparent' },
+    chartArea: { left: '5%', top: '10%', right: '5%', bottom: '20%', width: '90%', height: '75%' },
+    pieSliceText: 'percentage', // Show percentage on slices
+    tooltip: { trigger: 'focus' } // Show tooltip on hover
+  };
+
+  const chart = new google.visualization.PieChart(chartDiv);
+  chart.draw(data, options);
+}
+
+
+// NEW: Function to prompt for password before opening sheet
+function promptForEditSheet() {
+  const passwordInput = document.getElementById('adminPasswordInput');
+  const passwordError = document.getElementById('passwordError');
+  passwordInput.value = ''; // Clear previous input
+  passwordError.style.display = 'none'; // Hide previous error
+  showModal('passwordModal');
+}
+
+// NEW: Function to verify password and proceed
+function verifyPasswordAndProceed() {
+  const passwordInput = document.getElementById('adminPasswordInput');
+  const passwordError = document.getElementById('passwordError');
+  const enteredPassword = passwordInput.value;
+
+  if (enteredPassword === 'Admin') { // Hardcoded password
+    hideModal('passwordModal');
+    // Replace with your actual Google Sheet URL
+    window.open('https://docs.google.com/spreadsheets/d/1YIM_Zj_V8Ck0vwtEGEyxuQKSmA7r7KAsGNwwRjeqeJE/edit', '_blank');
+  } else {
+    passwordError.textContent = 'รหัสผ่านไม่ถูกต้อง';
+    passwordError.style.display = 'block';
+  }
+}
+</script>
 </body>
 </html>
